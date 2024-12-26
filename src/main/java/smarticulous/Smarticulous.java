@@ -87,13 +87,12 @@ public class Smarticulous {
         // TODO: Implement
         Connection db = DriverManager.getConnection(dburl);
          Statement st = db.createStatement();
-             
-             st.executeUpdate("CREATE TABLE IF NOT EXISTS User (UserId INTEGER PRIMARY KEY , Username TEXT UNIQUE , Firstname TEXT, Lastname TEXT,Password Text); ");
-             st.executeUpdate("CREATE TABLE IF NOT EXISTS Exercise (ExerciseId INTEGER PRIMARY KEY , Name TEXT,DueDate INTEGER);");
-             st.executeUpdate("CREATE TABLE IF NOT EXISTS QUESTION (ExerciseId INTEGER, QuestionId INTEGER ,Name TEXT,Desc TEXT,Points INTEGER,PRIMARY KEY (ExerciseId,QuestionId) );");
-             st.executeUpdate("CREATE TABLE IF NOT EXISTS Submission (SubmissionId INTEGER PRIMARY KEY , UserId TEXT , ExerciseId INTEGER,SubmissionTime INTEGER);");
-             st.executeUpdate("CREATE TABLE IF NOT EXISTS QuestionGrade(SubmissionId INTEGER , QuestionId INTEGER ,GRADE REAL,PRIMARY KEY(SubmissionId,QuestionId);");
-       
+         st.executeUpdate("CREATE TABLE IF NOT EXISTS User (UserId INTEGER PRIMARY KEY , Username TEXT UNIQUE , Firstname TEXT, Lastname TEXT, Password TEXT);");
+         st.executeUpdate("CREATE TABLE IF NOT EXISTS Exercise (ExerciseId INTEGER PRIMARY KEY , Name TEXT, DueDate INTEGER);");
+         st.executeUpdate("CREATE TABLE IF NOT EXISTS QUESTION (ExerciseId INTEGER, QuestionId INTEGER, Name TEXT, Desc TEXT, Points INTEGER, PRIMARY KEY (ExerciseId, QuestionId));");
+         st.executeUpdate("CREATE TABLE IF NOT EXISTS Submission (SubmissionId INTEGER PRIMARY KEY , UserId TEXT , ExerciseId INTEGER, SubmissionTime INTEGER);");
+         st.executeUpdate("CREATE TABLE IF NOT EXISTS QuestionGrade (SubmissionId INTEGER , QuestionId INTEGER , GRADE REAL, PRIMARY KEY (SubmissionId, QuestionId));");
+         
         return db;
     }
 
