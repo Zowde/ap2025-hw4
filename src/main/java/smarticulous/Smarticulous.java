@@ -123,9 +123,58 @@ public class Smarticulous {
      * @throws SQLException
      */
     public int addOrUpdateUser(User user, String password) throws SQLException {
-        // TODO: Implement
-        return -1;
-    }
+        // SQL query to check if the user with the provided Username exists
+        String selectSql = "SELECT UserId FROM User WHERE Username = ?;";
+        
+        PreparedStatement pt1 = db.prepareStatement(selectSql);
+            pt1.setString(1, user.username);  // Set the Username to check
+            ResultSet rs = pt1.executeQuery();  // Execute the SELECT query
+            
+            if (rs.next()) { // User exists, so update their information
+                int userId = rs.getInt("UserId");  // Get the UserId from the result set
+                
+                String updateSql = "UPDATE User SET Password = ?, Firstname = ?, Lastname = ? WHERE Username = ?;";
+            PreparedStatement pt2 = db.prepareStatement(updateSql);
+                    pt2.setString(1, password);    // Set the new password
+                    pt2.setString(2, user.firstname);  // Set the new firstname
+                    pt2.setString(3, user.lastname);  // Set the new lastname
+                    pt2.setString(4, user.username);  // Set the unique Username
+                    
+                    // Execute the update
+                    pt2.executeUpdate();
+                    
+                    // Return the existing UserId
+                    return userId;
+            }
+                
+            else { // User does not exist, so insert a new user
+                String insertSql = "INSERT INTO User (Username, Firstname, Lastname, Password) VALUES (?, ?, ?, ?);";
+                PreparedStatement pt3 = db.prepareStatement(insertSql); 
+                    pt3.setString(1, user.username);  // Set the Username
+                    pt3.setString(2, user.firstname);  // Set the firstname
+                    pt3.setString(3, user.lastname);   // Set the lastname
+                    pt3.setString(4, password);        // Set the password
+                    
+                    // Execute the insert
+                    pt3.executeUpdate();
+                  
+                    }
+                    String userid ="SELECT UserId FROM User Where Username = ?;";
+                    PreparedStatement pt4 = db.prepareStatement(userid);
+                    pt4.setString(1, user.username);
+                  try(ResultSet rs4 = pt4.executeQuery())
+                  {
+                        if(rs4.next())
+                        return rs4.getInt("UderId");
+                  }
+
+
+
+                }
+
+    
+    
+    
 
 
     /**
@@ -142,6 +191,19 @@ public class Smarticulous {
      */
     public boolean verifyLogin(String username, String password) throws SQLException {
         // TODO: Implement
+        String sqlver = "SELECT Username FROM User WHERE Username=? , Passwrod=?;";
+        PreparedStatement pt = db.prepareStatement(sqlver);
+        pt.setString(1, username);
+        pt.setString(2, password);
+        try(ResultSet rs = pt.executeQuery()) {
+             if(rs.next())
+             {
+                return true;
+             }
+            
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
         return false;
     }
 
@@ -156,6 +218,7 @@ public class Smarticulous {
      */
     public int addExercise(Exercise exercise) throws SQLException {
         // TODO: Implement
+    
         return -1;
     }
 
