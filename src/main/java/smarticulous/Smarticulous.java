@@ -162,13 +162,14 @@ public class Smarticulous {
                     String userid ="SELECT UserId FROM User Where Username = ?;";
                     PreparedStatement pt4 = db.prepareStatement(userid);
                     pt4.setString(1, user.username);
+                    int id=-1;
                   try(ResultSet rs4 = pt4.executeQuery())
                   {
                         if(rs4.next())
-                        return rs4.getInt("UderId");
+                        id =rs4.getInt("UderId");
                   }
 
-
+                return id;
 
                 }
 
