@@ -3,10 +3,12 @@ package smarticulous;
 import smarticulous.db.Exercise;
 import smarticulous.db.Submission;
 import smarticulous.db.User;
+import smarticulous.db.Exercise.Question;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * The Smarticulous class, implementing a grading system.
@@ -192,11 +194,50 @@ public class Smarticulous {
      * @throws SQLException
      */
     public int addExercise(Exercise exercise) throws SQLException {
-        // TODO: Implement
-    
-        return -1;
-    }
+        // Check if the exercise already exists
+        String exid = "SELECT ExerciseId FROM Exercise WHERE Name=? AND DueDate=?;";
+        PreparedStatement ps1 = db.prepareStatement(exid);
+        ps1.setString(1, exercise.name);
+        ps1.setString(2, String.valueOf(exercise.dueDate.getTime()));
+        ResultSet rs = ps1.executeQuery();
+        if (!rs.next()) {  // Exercise doesn't exist
+            // Insert the new exercise
+            String addexer = "INSERT INTO Exercise (Name, DueDate) VALUES(?,?);";
+            PreparedStatement ps2 = db.prepareStatement(addexer);
+            ps2.setString(1, exercise.name);
+            ps2.setString(2, String.valueOf(exercise.dueDate.getTime()));
+            ps2.executeUpdate();
+            ps1.setString(1, exercise.name);
+            ps1.setString(2, String.valueOf(exercise.dueDate.getTime()));
+            ResultSet rs2 = ps1.executeQuery();
+            rs2.next();
+           int id =  rs2.getInt("ExerciseId");// the exrciseid
+           addQuestion(exercise.questions,id);
 
+                return id;
+            
+
+           
+        }
+    
+        return -1;  // Exercise already exists
+    }
+    
+    public void addQuestion(List<Question> ls,int id) throws SQLException
+    {
+       for(Question iter :ls) {
+
+              String insertquestionsql = "INSERT INTO Question (ExerciseId,Name ,  Desc , Points) VALUES(?,?,?,?);";
+              PreparedStatement ps = db.prepareStatement(insertquestionsql);
+              ps.setInt(1,id );
+              ps.setString(2, iter.name);
+              ps.setString(3, iter.desc);
+              ps.setInt(4, iter.points);
+              ps.executeUpdate();
+
+        }
+     
+    }
 
     /**
      * Return a list of all the exercises in the database.
@@ -208,7 +249,43 @@ public class Smarticulous {
      */
     public List<Exercise> loadExercises() throws SQLException {
         // TODO: Implement
-        return null;
+        String exercisetable = "SELECT * FROM Exercise ORDER BY ExerciseId;";
+        PreparedStatement ps = db.prepareStatement(exercisetable);
+        ResultSet rs = ps.executeQuery();
+        List<Exercise> ls = new ArrayList<>();
+        while (rs.next()) {
+
+          int id = rs.getInt("ExerciseId");
+        String name =   rs.getString("Name");
+        java.util.Date d = new Date(rs.getLong("DueDate"));
+        Exercise ex = new Exercise(id, name, d);
+        addQuestion(ex.questions, id);
+        List<Question> ls2 =getquestionExercise(ex);
+        ex.questions = ls2;
+         ls.add(ex);
+            
+        }
+        rs.close();
+        return ls;
+    }
+
+    public List<Question> getquestionExercise(Exercise ex) throws SQLException
+    {
+        String exercisetable = "SELECT Name,Desc,Points FROM Question Where ExerciseId=?;";
+        PreparedStatement ps = db.prepareStatement(exercisetable);
+        ps.setInt(1, ex.id);
+        ResultSet rs = ps.executeQuery();
+        List<Question> ls = new ArrayList<>();
+        while (rs.next()) {
+        String name = rs.getString("Name");
+        String desc = rs.getString("Desc");
+        int points = rs.getInt("Points");
+        Question q = ex.new Question(name, desc, points);
+        ls.add(q);
+        
+        }
+        return ls;
+
     }
 
     // ========== Submission Storage ===============
