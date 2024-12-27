@@ -302,6 +302,48 @@ public class Smarticulous {
      */
     public int storeSubmission(Submission submission) throws SQLException {
         // TODO: Implement
+        /*check if the user exist */
+         String userexist = "SELECT UserId FROM User Where Username = ?;";
+         PreparedStatement ps1 = db.prepareStatement(userexist);
+         ps1.setString(1,submission.user.username);
+         ResultSet rs1 = ps1.executeQuery();
+
+       /* checl if the exercise exist */
+       String exerciseexist = "SELECT ExerciseId FROM Exercise Where ExerciseId = ?;";
+       PreparedStatement ps2 = db.prepareStatement(exerciseexist);
+       ps2.setInt(1,submission.exercise.id);
+       ResultSet rs2 = ps2.executeQuery();
+         if(rs1.next() && rs2.next()){ // the user and exercise are valid
+            if (submission.id == -1) {
+                // Insert new submission
+                String insertSubmissionQuery = "INSERT INTO Submission (UserId, ExerciseId, SubmissionTime) VALUES (?, ?, ?);";
+                PreparedStatement insertStmt = db.prepareStatement(insertSubmissionQuery);
+                insertStmt.setInt(1, rs1.getInt("UserId"));
+                insertStmt.setInt(2, rs2.getInt("ExerciseId"));
+                insertStmt.setLong(3, submission.submissionTime.getTime());
+        
+                insertStmt.executeUpdate();
+        
+                // Retrieve the generated ID
+                ResultSet generatedKeys = insertStmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                }
+            } 
+            else {
+                // Update existing submission
+                String updateSubmissionQuery = "UPDATE Submission SET UserId = ?, ExerciseId = ?,SubmissionTime = ? WHERE SubmissionId = ?;";
+                PreparedStatement updateStmt = db.prepareStatement(updateSubmissionQuery);
+                updateStmt.setInt(1, rs1.getInt("UserId"));
+                updateStmt.setInt(2, rs2.getInt("ExerciseId"));
+                updateStmt.setLong(3, submission.submissionTime.getTime());
+                updateStmt.setInt(4, submission.id);
+        
+                updateStmt.executeUpdate();
+        
+                return submission.id;
+            }
+         }
         return -1;
     }
 
