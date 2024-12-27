@@ -82,21 +82,18 @@ public class Smarticulous {
      * @param dburl The JDBC url of the database to open (will be of the form "jdbc:sqlite:...")
      * @return the new connection
      * @throws SQLException
+     * 
      */
     public Connection openDB(String dburl) throws SQLException {
-      try(Connection db = DriverManager.getConnection(dburl);
-         Statement st = db.createStatement()){
+          db = DriverManager.getConnection(dburl);
+         Statement st = db.createStatement();
          st.executeUpdate("CREATE TABLE IF NOT EXISTS User (UserId INTEGER PRIMARY KEY , Username TEXT UNIQUE , Firstname TEXT, Lastname TEXT, Password TEXT);");
          st.executeUpdate("CREATE TABLE IF NOT EXISTS Exercise (ExerciseId INTEGER PRIMARY KEY , Name TEXT, DueDate INTEGER);");
          st.executeUpdate("CREATE TABLE IF NOT EXISTS Question (ExerciseId INTEGER, QuestionId INTEGER, Name TEXT, Desc TEXT, Points INTEGER, PRIMARY KEY (ExerciseId, QuestionId));");
          st.executeUpdate("CREATE TABLE IF NOT EXISTS Submission (SubmissionId INTEGER PRIMARY KEY , UserId INTEGER , ExerciseId INTEGER, SubmissionTime INTEGER);");
          st.executeUpdate("CREATE TABLE IF NOT EXISTS QuestionGrade (SubmissionId INTEGER , QuestionId INTEGER , Grade REAL, PRIMARY KEY (SubmissionId, QuestionId));");
-         }
-         catch (SQLException e){
-        e.printStackTrace();
-         }
-         
-        return db;
+         Connection db2 = db;
+        return db2;
     }
 
 
@@ -126,14 +123,15 @@ public class Smarticulous {
      * @throws SQLException
      */
     public int addOrUpdateUser(User user, String password) throws SQLException {
-        String exist = "SELECT Username,Password FROM User WHERE User.Username = ?,User.Password=?;";
+        //"jdbc:sqlite:file:633724?mode=memory&cache=shared"
+
+        String exist = "SELECT UserId FROM User WHERE User.Username = ? ";
         PreparedStatement ps1 = db.prepareStatement(exist);
             ps1.setString(1, user.username);
-            ps1.setString(2, password);
             ResultSet rs1 = ps1.executeQuery();
                   if(rs1.next())//the username exist
                   {
-                    String updatepass = "UPDATE User SET User.Password = ? WHERE User.Username=?;" ;
+                    String updatepass = "UPDATE User SET Password = ? WHERE Username=?;" ;
                     PreparedStatement ps2 = db.prepareStatement(updatepass);
                     ps2.setString(1,password);
                     ps2.setString(2, user.username);
@@ -143,9 +141,9 @@ public class Smarticulous {
                     String insertuser = "INSERT INTO User (Username,Firstname,Lastname,password) VALUES(?,?,?,?);";
                     PreparedStatement ps3 = db.prepareStatement(insertuser);
                     ps3.setString(1, user.username);
-                    ps3.setString(1, user.firstname);
-                    ps3.setString(1, user.lastname);
-                    ps3.setString(1, password);
+                    ps3.setString(2, user.firstname);
+                    ps3.setString(3, user.lastname);
+                    ps3.setString(4, password);
                     ps3.executeUpdate();
                   }
                   String getid ="SELECT UserId FROM User WHERE User.username = ?;";
@@ -154,6 +152,7 @@ public class Smarticulous {
                   ResultSet res = ps4.executeQuery();
                   res.next();
                   return res.getInt("UserId");
+                  
 
     }
     
