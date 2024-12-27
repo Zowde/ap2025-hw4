@@ -84,7 +84,6 @@ public class Smarticulous {
      * @throws SQLException
      */
     public Connection openDB(String dburl) throws SQLException {
-        // TODO: Implement
       try(Connection db = DriverManager.getConnection(dburl);
          Statement st = db.createStatement()){
          st.executeUpdate("CREATE TABLE IF NOT EXISTS User (UserId INTEGER PRIMARY KEY , Username TEXT UNIQUE , Firstname TEXT, Lastname TEXT, Password TEXT);");
@@ -96,6 +95,7 @@ public class Smarticulous {
          catch (SQLException e){
         e.printStackTrace();
          }
+         
         return db;
     }
 
@@ -126,52 +126,35 @@ public class Smarticulous {
      * @throws SQLException
      */
     public int addOrUpdateUser(User user, String password) throws SQLException {
-        // SQL query to check if the user with the provided Username exists
-        String selectSql = "SELECT UserId FROM User WHERE Username = ?";
-        
-        try (PreparedStatement pt1 = db.prepareStatement(selectSql)) {
-            pt1.setString(1, user.username);  // Set the Username to check
-            ResultSet rs = pt1.executeQuery();  // Execute the SELECT query
-            
-            if (rs.next()) { // User exists, so update their information
-                int userId = rs.getInt("UserId");  // Get the UserId from the result set
-                
-                String updateSql = "UPDATE User SET Password = ?, Firstname = ?, Lastname = ? WHERE Username = ?";
-                try (PreparedStatement pt2 = db.prepareStatement(updateSql)) {
-                    pt2.setString(1, password);    // Set the new password
-                    pt2.setString(2, user.firstname);  // Set the new firstname
-                    pt2.setString(3, user.lastname);  // Set the new lastname
-                    pt2.setString(4, user.username);  // Set the unique Username
-                    
-                    // Execute the update
-                    pt2.executeUpdate();
-                    
-                    // Return the existing UserId
-                    return userId;
-                }
-            } else { // User does not exist, so insert a new user
-                String insertSql = "INSERT INTO User (Username, Firstname, Lastname, Password) VALUES (?, ?, ?, ?)";
-                try (PreparedStatement pt3 = db.prepareStatement(insertSql)) {
-                    pt3.setString(1, user.username);  // Set the Username
-                    pt3.setString(2, user.firstname);  // Set the firstname
-                    pt3.setString(3, user.lastname);   // Set the lastname
-                    pt3.setString(4, password);        // Set the password
-                    
-                    // Execute the insert
-                    pt3.executeUpdate();
-                    
-                    // Retrieve the generated UserId
-                    try (ResultSet generatedKeys = pt3.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
-                            // Return the generated UserId
-                            return generatedKeys.getInt(1);
-                        } else {
-                            throw new SQLException("Failed to create user, no ID obtained.");
-                        }
-                    }
-                }
-            }
-        }
+        String exist = "SELECT Username,Password FROM User WHERE User.Username = ?,User.Password=?;";
+        PreparedStatement ps1 = db.prepareStatement(exist);
+            ps1.setString(1, user.username);
+            ps1.setString(2, password);
+            ResultSet rs1 = ps1.executeQuery();
+                  if(rs1.next())//the username exist
+                  {
+                    String updatepass = "UPDATE User SET User.Password = ? WHERE User.Username=?;" ;
+                    PreparedStatement ps2 = db.prepareStatement(updatepass);
+                    ps2.setString(1,password);
+                    ps2.setString(2, user.username);
+                    ps2.executeUpdate();
+                  }
+                  else{/// adding the username
+                    String insertuser = "INSERT INTO User (Username,Firstname,Lastname,password) VALUES(?,?,?,?);";
+                    PreparedStatement ps3 = db.prepareStatement(insertuser);
+                    ps3.setString(1, user.username);
+                    ps3.setString(1, user.firstname);
+                    ps3.setString(1, user.lastname);
+                    ps3.setString(1, password);
+                    ps3.executeUpdate();
+                  }
+                  String getid ="SELECT UserId FROM User WHERE User.username = ?;";
+                  PreparedStatement ps4 = db.prepareStatement(getid);
+                  ps4.setString(1, user.username);
+                  ResultSet res = ps4.executeQuery();
+                  res.next();
+                  return res.getInt("UserId");
+
     }
     
 
@@ -188,27 +171,7 @@ public class Smarticulous {
      * @see <a href="https://crackstation.net/hashing-security.htm">How to Hash Passwords Properly</a>
      */
     public boolean verifyLogin(String username, String password) throws SQLException {
-        // TODO: Implement
-        String sqlver = "SELECT Username FROM User WHERE Username=? , Passwrod=?;";
-       try( PreparedStatement pt = db.prepareStatement(sqlver)){
-        pt.setString(1, username);
-        pt.setString(2, password);
-        try(ResultSet rs = pt.executeQuery()) {
-             if(rs.next())
-             {
-                return true;
-             }
-            
-        } 
-            
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-    catch (SQLException  e){e.printStackTrace();}
-   
-        return false;
+      return false;
     }
 
     // =========== Exercise Management =============
