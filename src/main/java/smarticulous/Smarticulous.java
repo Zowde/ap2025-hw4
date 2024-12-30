@@ -368,28 +368,21 @@ public class Smarticulous {
      *
      * @return
      */
-    PreparedStatement getLastSubmissionGradesStatement() throws SQLException {
-        // TODO: Implement
-        return null;
+    public PreparedStatement getLastSubmissionGradesStatement() throws SQLException {
+    
+        String sql = " SELECT  Submission.SubmissionId, Question.QuestionId, QuestionGrade.Grade, Submission.SubmissionTime" +
+        " FROM Submission  JOIN QuestionGrade  ON Submission.SubmissionId = QuestionGrade.SubmissionId"+
+        " JOIN Question  ON Question .ExerciseId = Submission.ExerciseId AND Question .QuestionId = QuestionGrade.QuestionId"
+        +" JOIN User ON User.UserId = Submission.UserId"+
+        " WHERE User.Username = ? AND Submission.ExerciseId = ?"
+        +" ORDER BY Submission.SubmissionTime DESC, Question.QuestionId ASC"+
+        " LIMIT ?;" ;
+    return db.prepareStatement(sql);
+    
     }
-
-    /**
-     * Return a prepared SQL statement that, when executed, will
-     * return one row for every question of the <i>best</i> submission for the given exercise by the given user.
-     * The best submission is the one whose point total is maximal.
-     * <p>
-     * The rows should be sorted by QuestionId, and each row should contain:
-     * - A column named "SubmissionId" with the submission id.
-     * - A column named "QuestionId" with the question id,
-     * - A column named "Grade" with the grade for that question.
-     * - A column named "SubmissionTime" with the time of submission.
-     * <p>
-     * Parameter 1 of the prepared statement will be set to the User's username, Parameter 2 to the Exercise Id, and
-     * Parameter 3 to the number of questions in the given exercise.
-     * <p>
-     * This will be used by {@link #getBestSubmission(User, Exercise)}
-     *
-     */
+    
+    
+    
     PreparedStatement getBestSubmissionGradesStatement() throws SQLException {
         // TODO: Implement
         return null;
